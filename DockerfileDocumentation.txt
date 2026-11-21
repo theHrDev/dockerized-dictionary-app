@@ -1,0 +1,19 @@
+# Build stage
+FROM node:20-alpine AS build      #Creates the build environment using Node.js
+
+WORKDIR /app                      #Sets the working directory
+
+COPY package*.json ./             #Copies dependency manifests
+
+RUN npm ci                   #	Installs project dependencies
+
+COPY . .                          # Copies application source code
+
+RUN npm run build                 #Generates production files
+
+# Production stage
+FROM httpd:2.4                    #Starts a separate Apache production image
+
+COPY --from=build /app/dist /usr/local/apache2/htdocs/          #Copies only the production build into Apache
+
+EXPOSE 80                             # Documents the container's listening port
